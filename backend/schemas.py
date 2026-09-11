@@ -16,6 +16,8 @@ class IncidentResponse(BaseModel):
     description: str
 
     location: str
+    latitude: float | None
+    longitude: float | None
 
     incident_type: str | None
 

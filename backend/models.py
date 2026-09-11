@@ -16,6 +16,8 @@ class Incident(Base):
     risk_score = Column(Float)
 
     location = Column(String(200))
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     people_affected = Column(Boolean, default=False)
 

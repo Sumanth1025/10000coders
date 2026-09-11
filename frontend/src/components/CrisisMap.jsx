@@ -11,63 +11,18 @@ import "leaflet/dist/leaflet.css";
 
 const HYDERABAD_CENTER = [17.3850, 78.4867];
 
-const LOCATION_COORDINATES = {
-  "miyapur": [17.4969, 78.3483],
-  "miyapur, hyderabad": [17.4969, 78.3483],
+function getCoordinates(incident) {
+  const latitude = Number(incident.latitude);
+  const longitude = Number(incident.longitude);
 
-  "kukatpally": [17.4849, 78.4138],
-  "kukatpally, hyderabad": [17.4849, 78.4138],
-
-  "hitech city": [17.4483, 78.3915],
-  "hitech city, hyderabad": [17.4483, 78.3915],
-
-  "ameerpet": [17.4375, 78.4483],
-  "ameerpet, hyderabad": [17.4375, 78.4483],
-
-  "madhapur": [17.4486, 78.3908],
-  "madhapur, hyderabad": [17.4486, 78.3908],
-
-  "gachibowli": [17.4401, 78.3489],
-  "gachibowli, hyderabad": [17.4401, 78.3489],
-
-  "secunderabad": [17.4399, 78.4983],
-  "secunderabad, hyderabad": [17.4399, 78.4983],
-
-  "lb nagar": [17.3457, 78.5522],
-  "lb nagar, hyderabad": [17.3457, 78.5522],
-
-  "banjara hills": [17.4156, 78.4347],
-  "banjara hills, hyderabad": [17.4156, 78.4347],
-
-  "jubilee hills": [17.4319, 78.4071],
-  "jubilee hills, hyderabad": [17.4319, 78.4071],
-
-  "charminar": [17.3616, 78.4747],
-  "charminar, hyderabad": [17.3616, 78.4747],
-};
-
-function getCoordinates(location, index) {
-  const key = String(location || "").trim().toLowerCase();
-
-  if (LOCATION_COORDINATES[key]) {
-    return LOCATION_COORDINATES[key];
+  if (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude)
+  ) {
+    return [latitude, longitude];
   }
 
-  const offsets = [
-    [0, 0],
-    [0.025, 0.030],
-    [-0.025, 0.025],
-    [0.020, -0.035],
-    [-0.030, -0.025],
-    [0.035, -0.015],
-  ];
-
-  const offset = offsets[index % offsets.length];
-
-  return [
-    HYDERABAD_CENTER[0] + offset[0],
-    HYDERABAD_CENTER[1] + offset[1],
-  ];
+  return null;
 }
 
 function getPriorityColor(priority) {
@@ -96,9 +51,9 @@ function MapAutoFit({ incidents }) {
 
   const positions = useMemo(
     () =>
-      incidents.map((incident, index) =>
-        getCoordinates(incident.location, index)
-      ),
+      incidents
+        .map((incident) => getCoordinates(incident))
+        .filter(Boolean),
     [incidents]
   );
 
@@ -139,11 +94,12 @@ export default function CrisisMap({
 
   <MapAutoFit incidents={incidents} />
 
-  {incidents.map((incident, index) => {
-    const position = getCoordinates(
-      incident.location,
-      index
-    );
+  {incidents.map((incident) => {
+  const position = getCoordinates(incident);
+
+  if (!position) {
+    return null;
+  }
 
     const priority = incident.priority || "P4";
     const color = getPriorityColor(priority);

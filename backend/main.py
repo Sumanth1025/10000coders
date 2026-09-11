@@ -1,6 +1,7 @@
 import json
 import sys
 from pathlib import Path
+import requests
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -90,7 +91,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -235,7 +239,6 @@ def incident_to_response(incident):
         incident
     )
 
-
     try:
 
         recommended_actions = json.loads(
@@ -246,13 +249,15 @@ def incident_to_response(incident):
 
         recommended_actions = []
 
-
     return {
         "id": incident.id,
 
         "description": incident.description,
 
         "location": incident.location,
+
+        "latitude": incident.latitude,
+        "longitude": incident.longitude,
 
         "incident_type": incident.incident_type,
 
@@ -316,6 +321,49 @@ def health_check():
     }
 
 
+def geocode_location(location: str):
+    """
+    Convert a human-readable location into latitude and longitude
+    using OpenStreetMap Nominatim.
+    """
+
+    url = "https://nominatim.openstreetmap.org/search"
+
+    params = {
+        "q": location,
+        "format": "json",
+        "limit": 1,
+        "countrycodes": "in",
+    }
+
+    headers = {
+        "User-Agent": "CrisisIQ/2.0 emergency-response-hackathon"
+    }
+
+    try:
+        response = requests.get(
+            url,
+            params=params,
+            headers=headers,
+            timeout=10,
+        )
+
+        response.raise_for_status()
+
+        results = response.json()
+
+        if not results:
+            return None, None
+
+        latitude = float(results[0]["lat"])
+        longitude = float(results[0]["lon"])
+
+        return latitude, longitude
+
+    except Exception:
+        return None, None
+
+    
 # ============================================================
 # CREATE INCIDENT
 # ============================================================
@@ -369,13 +417,15 @@ def create_incident(
     # CREATE DATABASE RECORD
     # --------------------------------------------------------
 
+    latitude, longitude = geocode_location(incident.location)
     new_incident = Incident(
 
         description=incident.description,
 
         # User-entered location is authoritative.
         location=incident.location,
-
+        latitude=latitude,
+        longitude=longitude,
         incident_type=incident_type,
 
         severity=severity,
@@ -423,9 +473,9 @@ def create_incident(
     )
 
 
-# ============================================================
+# ================================================================
 # GET ALL INCIDENTS
-# ============================================================
+# ================================================================
 
 @app.get(
     "/incidents",
@@ -441,12 +491,10 @@ def get_incidents(
         .all()
     )
 
-
     return [
         incident_to_response(incident)
         for incident in incidents
     ]
-
 
 # ============================================================
 # GET SINGLE INCIDENT
