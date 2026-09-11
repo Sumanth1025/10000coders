@@ -19,8 +19,17 @@ class Incident(Base):
 
     people_affected = Column(Boolean, default=False)
 
+    people_trapped = Column(Boolean, default=False)
+
     rescue_required = Column(Boolean, default=False)
+
+    road_blocked = Column(Boolean, default=False)
+
+    summary = Column(Text)
 
     recommended_actions = Column(Text)
 
-    status = Column(String(30), default="Reported")
+    status = Column(
+        String(30),
+        default="Reported"
+    )
