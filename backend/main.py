@@ -148,57 +148,79 @@ def normalize_severity(value):
 # ============================================================
 
 def calculate_priority(incident):
+    """
+    CrisisIQ Priority Engine
 
-    risk = float(incident.risk_score or 0)
+    P1 = Critical disaster/crisis
+    P2 = Urgent emergency
+    P3 = Moderate incident
+    P4 = Low priority
+    """
 
-    severity = incident.severity
+    severity = str(incident.severity or "").strip().lower()
+    incident_type = str(incident.incident_type or "").strip().lower()
+    risk = max(0.0, min(100.0, float(incident.risk_score or 0)))
 
-    rescue = bool(incident.rescue_required)
+    # ==================================================
+    # P1 — CRITICAL DISASTERS
+    # These ALWAYS receive P1
+    # ==================================================
 
-    trapped = bool(incident.people_trapped)
+    p1_types = {
+        "fire",
+        "flood",
+        "earthquake",
+        "building collapse",
+        "building_collapse",
+        "tsunami",
+        "cyclone",
+        "storm",
+        "landslide",
+        "chemical accident",
+        "industrial accident",
+        "major accident",
+    }
 
-
-    # ========================================================
-    # P1 — IMMEDIATE LIFE-THREATENING EMERGENCY
-    # ========================================================
-
-    if (
-        severity == "Critical"
-        or risk >= 90
-    ):
-
+    if incident_type in p1_types:
         return "P1", 400 + risk
 
+    # ==================================================
+    # P2 — URGENT
+    # ==================================================
 
-    # ========================================================
-    # P2 — HIGH URGENCY
-    # ========================================================
+    p2_types = {
+        "accident",
+        "medical",
+        "missing person",
+    }
 
-    if (
-        severity == "High"
-        or risk >= 65
-        or rescue
-        or trapped
-    ):
-
+    if incident_type in p2_types:
         return "P2", 300 + risk
 
+    # ==================================================
+    # P1 based on extreme severity
+    # ==================================================
 
-    # ========================================================
+    if severity == "critical" or risk >= 90:
+        return "P1", 400 + risk
+
+    # ==================================================
+    # P2 based on high severity / rescue
+    # ==================================================
+
+    if severity == "high" or risk >= 65 or incident.rescue_required:
+        return "P2", 300 + risk
+
+    # ==================================================
     # P3 — MODERATE
-    # ========================================================
+    # ==================================================
 
-    if (
-        severity == "Medium"
-        or risk >= 35
-    ):
-
+    if severity == "medium" or risk >= 35:
         return "P3", 200 + risk
 
-
-    # ========================================================
+    # ==================================================
     # P4 — LOW
-    # ========================================================
+    # ==================================================
 
     return "P4", 100 + risk
 

@@ -199,23 +199,181 @@ function App() {
           <StatCard icon="⚠️" title="High Priority" value={stats.highRisk} description="P1 and P2 queue" className="orange" />
           <StatCard icon="🚑" title="Rescue Required" value={stats.rescue} description="Emergency intervention" className="purple" />
         </section>
+        {/* PRIORITY DISTRIBUTION */}
+<section className="priority-distribution-card">
+  <div className="priority-distribution-header">
+    <h2>Priority Distribution</h2>
+    <span>Incidents by Priority Level</span>
+  </div>
 
-        <section className="overview-grid">
-          <div className="overview-card">
-            <div className="card-heading"><h3>Response Status</h3><span>{stats.active} active</span></div>
-            <div className="status-row"><span><i className="small-dot blue-dot" /> Active incidents</span><strong>{stats.active}</strong></div>
-            <div className="status-row"><span><i className="small-dot green" /> Resolved / Closed</span><strong>{stats.resolved}</strong></div>
-          </div>
-          <div className="overview-card">
-            <div className="card-heading"><h3>Priority Distribution</h3><span>Backend engine</span></div>
-            <div className="priority-bars">
-              <PriorityBar label="P1" count={stats.p1} total={stats.total} className="p1" />
-              <PriorityBar label="P2" count={stats.p2} total={stats.total} className="p2" />
-              <PriorityBar label="P3" count={stats.p3} total={stats.total} className="p3" />
-              <PriorityBar label="P4" count={stats.p4} total={stats.total} className="p4" />
+  {(() => {
+    const priorityCounts = {
+      P1: incidents.filter((i) => i.priority === "P1").length,
+      P2: incidents.filter((i) => i.priority === "P2").length,
+      P3: incidents.filter((i) => i.priority === "P3").length,
+      P4: incidents.filter((i) => i.priority === "P4").length,
+    };
+
+    const total = incidents.length;
+
+    const p1Percent = total
+      ? (priorityCounts.P1 / total) * 100
+      : 0;
+
+    const p2Percent = total
+      ? (priorityCounts.P2 / total) * 100
+      : 0;
+
+    const p3Percent = total
+      ? (priorityCounts.P3 / total) * 100
+      : 0;
+
+    const p4Percent = total
+      ? (priorityCounts.P4 / total) * 100
+      : 0;
+
+    return (
+      <div className="priority-distribution-content">
+
+        {/* DONUT */}
+        <div className="priority-donut-section">
+
+          <div
+            className="priority-donut"
+            style={{
+              background: total
+                ? `conic-gradient(
+                    #ff304f 0% ${p1Percent}%,
+                    #ffc400 ${p1Percent}% ${p1Percent + p2Percent}%,
+                    #ff7900 ${p1Percent + p2Percent}% ${p1Percent + p2Percent + p3Percent}%,
+                    #16d66b ${p1Percent + p2Percent + p3Percent}% 100%
+                  )`
+                : "#263b52",
+            }}
+          >
+            <div className="priority-donut-center">
+              <strong>{total}</strong>
+              <span>Total</span>
+              <span>Incidents</span>
             </div>
           </div>
-        </section>
+
+          <div className="priority-legend">
+            <div>
+              <span className="legend-color p1"></span>
+              P1
+            </div>
+
+            <div>
+              <span className="legend-color p2"></span>
+              P2
+            </div>
+
+            <div>
+              <span className="legend-color p3"></span>
+              P3
+            </div>
+
+            <div>
+              <span className="legend-color p4"></span>
+              P4
+            </div>
+          </div>
+
+        </div>
+
+        {/* PRIORITY ROWS */}
+        <div className="priority-levels">
+
+          {/* P1 */}
+          <div className="priority-level p1">
+            <div className="priority-badge">P1</div>
+
+            <div className="priority-info">
+              <strong>{priorityCounts.P1}</strong>
+              <span>Critical</span>
+            </div>
+
+            <div className="priority-progress">
+              <div
+                className="priority-progress-fill"
+                style={{ width: `${p1Percent}%` }}
+              ></div>
+            </div>
+
+            <span className="priority-percent">
+              {Math.round(p1Percent)}%
+            </span>
+          </div>
+
+          {/* P2 */}
+          <div className="priority-level p2">
+            <div className="priority-badge">P2</div>
+
+            <div className="priority-info">
+              <strong>{priorityCounts.P2}</strong>
+              <span>High</span>
+            </div>
+
+            <div className="priority-progress">
+              <div
+                className="priority-progress-fill"
+                style={{ width: `${p2Percent}%` }}
+              ></div>
+            </div>
+
+            <span className="priority-percent">
+              {Math.round(p2Percent)}%
+            </span>
+          </div>
+
+          {/* P3 */}
+          <div className="priority-level p3">
+            <div className="priority-badge">P3</div>
+
+            <div className="priority-info">
+              <strong>{priorityCounts.P3}</strong>
+              <span>Medium</span>
+            </div>
+
+            <div className="priority-progress">
+              <div
+                className="priority-progress-fill"
+                style={{ width: `${p3Percent}%` }}
+              ></div>
+            </div>
+
+            <span className="priority-percent">
+              {Math.round(p3Percent)}%
+            </span>
+          </div>
+
+          {/* P4 */}
+          <div className="priority-level p4">
+            <div className="priority-badge">P4</div>
+
+            <div className="priority-info">
+              <strong>{priorityCounts.P4}</strong>
+              <span>Low</span>
+            </div>
+
+            <div className="priority-progress">
+              <div
+                className="priority-progress-fill"
+                style={{ width: `${p4Percent}%` }}
+              ></div>
+            </div>
+
+            <span className="priority-percent">
+              {Math.round(p4Percent)}%
+            </span>
+          </div>
+
+        </div>
+      </div>
+    );
+  })()}
+</section>
 
                 {/* =====================================================
             LIVE OPERATIONS MAP
