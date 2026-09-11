@@ -260,170 +260,293 @@ function App() {
 
           <aside className="selected-panel">
 
-            <div className="panel-heading">
+  <div className="panel-heading">
+    <div>
+      <span className="eyebrow">
+        INCIDENT INTELLIGENCE
+      </span>
 
-              <div>
-                <span className="eyebrow">
-                  INCIDENT INTELLIGENCE
-                </span>
+      <h2>Incident Details</h2>
+    </div>
+  </div>
 
-                <h2>Incident Details</h2>
-              </div>
+  {selectedIncident ? (
 
+    <div className="selected-incident">
+
+      {/* INCIDENT HEADER */}
+
+      <div className="selected-header">
+
+        <div className="selected-icon">
+          {getIncidentIcon(
+            selectedIncident.incident_type
+          )}
+        </div>
+
+        <div>
+          <h3>
+            {selectedIncident.incident_type}
+          </h3>
+
+          <p className="selected-location">
+            📍 {selectedIncident.location}
+          </p>
+        </div>
+
+      </div>
+
+
+      {/* PRIORITY */}
+
+      <div className="selected-priority">
+
+        <div>
+          <span
+            className={`priority ${
+              selectedIncident.priority?.toLowerCase()
+            }`}
+          >
+            {selectedIncident.priority}
+          </span>
+
+          <span className="priority-text">
+            Priority
+          </span>
+        </div>
+
+        <strong>
+          SCORE{" "}
+          {Number(
+            selectedIncident.priority_score || 0
+          ).toFixed(0)}
+        </strong>
+
+      </div>
+
+
+      {/* CORE INTELLIGENCE */}
+
+      <div className="selected-stat-grid">
+
+        <div>
+          <span>Severity</span>
+          <strong>
+            {selectedIncident.severity}
+          </strong>
+        </div>
+
+        <div>
+          <span>Risk Score</span>
+          <strong>
+            {Number(
+              selectedIncident.risk_score || 0
+            ).toFixed(0)}
+            /100
+          </strong>
+        </div>
+
+        <div>
+          <span>People</span>
+          <strong>
+            {selectedIncident.people_affected
+              ? "Affected"
+              : "None Reported"}
+          </strong>
+        </div>
+
+        <div>
+          <span>Rescue</span>
+          <strong>
+            {selectedIncident.rescue_required
+              ? "Required"
+              : "Not Required"}
+          </strong>
+        </div>
+
+      </div>
+
+
+      {/* AI FLAGS */}
+
+      <div className="intelligence-flags">
+
+        {selectedIncident.people_affected && (
+          <div className="intel-flag">
+            <span>👥</span>
+            <div>
+              <strong>People affected</strong>
+              <small>Emergency impact reported</small>
             </div>
+          </div>
+        )}
+
+        {selectedIncident.people_trapped && (
+          <div className="intel-flag danger">
+            <span>🚨</span>
+            <div>
+              <strong>People trapped</strong>
+              <small>Immediate rescue attention</small>
+            </div>
+          </div>
+        )}
+
+        {selectedIncident.rescue_required && (
+          <div className="intel-flag">
+            <span>🚑</span>
+            <div>
+              <strong>Rescue required</strong>
+              <small>Emergency intervention needed</small>
+            </div>
+          </div>
+        )}
+
+        {selectedIncident.road_blocked && (
+          <div className="intel-flag warning">
+            <span>🚧</span>
+            <div>
+              <strong>Road blocked</strong>
+              <small>May affect emergency access</small>
+            </div>
+          </div>
+        )}
+
+      </div>
 
 
-            {selectedIncident ? (
+      {/* AI SUMMARY */}
 
-              <div className="selected-incident">
+      {selectedIncident.summary && (
 
-                <div className="selected-icon">
-                  {getIncidentIcon(
-                    selectedIncident.incident_type
-                  )}
-                </div>
+        <div className="ai-summary">
 
-                <h3>
-                  {selectedIncident.incident_type}
-                </h3>
+          <div className="ai-summary-title">
+            <span>🧠</span>
+            AI Situation Summary
+          </div>
 
-                <p className="selected-location">
-                  📍 {selectedIncident.location}
-                </p>
+          <p>
+            {selectedIncident.summary}
+          </p>
 
+        </div>
 
-                <div className="selected-priority">
-
-                  <span
-                    className={`priority ${
-                      selectedIncident.priority?.toLowerCase()
-                    }`}
-                  >
-                    {selectedIncident.priority}
-                  </span>
-
-                  <span>
-                    Score{" "}
-                    {Number(
-                      selectedIncident.priority_score || 0
-                    ).toFixed(0)}
-                  </span>
-
-                </div>
+      )}
 
 
-                <div className="selected-stat-grid">
+      {/* RECOMMENDED ACTIONS */}
 
-                  <div>
-                    <span>Severity</span>
-                    <strong>
-                      {selectedIncident.severity}
-                    </strong>
-                  </div>
+      {selectedIncident.recommended_actions?.length > 0 && (
 
-                  <div>
-                    <span>Risk</span>
-                    <strong>
-                      {Number(
-                        selectedIncident.risk_score || 0
-                      ).toFixed(0)}
-                      /100
-                    </strong>
-                  </div>
+        <div className="selected-actions">
 
-                  <div>
-                    <span>Rescue</span>
-                    <strong>
-                      {selectedIncident.rescue_required
-                        ? "Required"
-                        : "Not Required"}
-                    </strong>
-                  </div>
+          <h4>
+            Recommended Actions
+          </h4>
 
-                  <div>
-                    <span>Status</span>
-                    <strong>
-                      {selectedIncident.status}
-                    </strong>
-                  </div>
+          <ul>
 
-                </div>
+            {selectedIncident.recommended_actions
+              .slice(0, 5)
+              .map((action, index) => (
+
+                <li key={index}>
+                  <span>✓</span>
+                  {action}
+                </li>
+
+              ))}
+
+          </ul>
+
+        </div>
+
+      )}
 
 
-                <div className="selected-description">
+      {/* RESPONSE CONTROL */}
 
-                  <h4>Situation</h4>
+      <div className="response-control">
 
-                  <p>
-                    {selectedIncident.description}
-                  </p>
+        <div className="response-control-header">
 
-                </div>
+          <h4>
+            Response Status
+          </h4>
 
+          <span className="current-status">
+            {selectedIncident.status}
+          </span>
 
-                <div className="selected-flags">
+        </div>
 
-                  {selectedIncident.people_affected && (
-                    <span>
-                      👥 People affected
-                    </span>
-                  )}
+        <select
+          value={selectedIncident.status}
+          onChange={(e) => {
+            updateStatus(
+              selectedIncident.id,
+              e.target.value
+            );
 
-                  {selectedIncident.rescue_required && (
-                    <span>
-                      🚑 Rescue required
-                    </span>
-                  )}
+            setSelectedIncident({
+              ...selectedIncident,
+              status: e.target.value
+            });
+          }}
+        >
 
-                </div>
+          <option value="Reported">
+            Reported
+          </option>
 
+          <option value="Analyzed">
+            Analyzed
+          </option>
 
-                {selectedIncident.recommended_actions?.length > 0 && (
+          <option value="Dispatched">
+            Dispatched
+          </option>
 
-                  <div className="selected-actions">
+          <option value="In Progress">
+            In Progress
+          </option>
 
-                    <h4>
-                      Recommended Actions
-                    </h4>
+          <option value="Resolved">
+            Resolved
+          </option>
 
-                    <ul>
+          <option value="Closed">
+            Closed
+          </option>
 
-                      {selectedIncident.recommended_actions
-                        .slice(0, 4)
-                        .map((action, index) => (
-                          <li key={index}>
-                            {action}
-                          </li>
-                        ))}
+        </select>
 
-                    </ul>
+      </div>
 
-                  </div>
+    </div>
 
-                )}
+  ) : (
 
-              </div>
+    <div className="no-selection">
 
-            ) : (
+      <div className="selection-icon">
+        📍
+      </div>
 
-              <div className="no-selection">
+      <h3>
+        Select an incident
+      </h3>
 
-                <div>📍</div>
+      <p>
+        Click a marker on the live map to inspect
+        AI-generated emergency intelligence.
+      </p>
 
-                <h3>
-                  Select an incident
-                </h3>
+    </div>
 
-                <p>
-                  Click a marker on the map to view
-                  AI-generated emergency intelligence.
-                </p>
+  )}
 
-              </div>
-
-            )}
-
-          </aside>
+</aside>
 
         </section>
         
@@ -539,10 +662,32 @@ function IncidentCard({ incident, onStatusChange, onDelete }) {
       <p className="description">{incident.description}</p>
 
       <div className="flags">
-        {incident.people_affected && <span>👥 People affected</span>}
-        {incident.rescue_required && <span>🚑 Rescue required</span>}
-        {!incident.people_affected && !incident.rescue_required && <span>✓ No immediate rescue flag</span>}
-      </div>
+
+  {incident.people_affected && (
+    <span>
+      👥 People affected
+    </span>
+  )}
+
+  {incident.people_trapped && (
+    <span className="danger-flag">
+      🚨 People trapped
+    </span>
+  )}
+
+  {incident.rescue_required && (
+    <span>
+      🚑 Rescue required
+    </span>
+  )}
+
+  {incident.road_blocked && (
+    <span className="warning-flag">
+      🚧 Road blocked
+    </span>
+  )}
+
+</div>
 
       {incident.recommended_actions?.length > 0 && <div className="actions"><h4>Recommended Actions</h4><ul>{incident.recommended_actions.map((action, index) => <li key={index}>{action}</li>)}</ul></div>}
 

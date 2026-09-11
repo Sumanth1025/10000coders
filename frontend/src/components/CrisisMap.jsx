@@ -71,10 +71,10 @@ function getCoordinates(location, index) {
 }
 
 function getPriorityColor(priority) {
-  if (priority === "P1") return "#dc2626";
-  if (priority === "P2") return "#ea580c";
-  if (priority === "P3") return "#eab308";
-  return "#16a34a";
+  if (priority === "P1") return "#ff304f";
+  if (priority === "P2") return "#ff7900";
+  if (priority === "P3") return "#ffc400";
+  return "#16d66b";
 }
 
 function getIncidentIcon(type) {
@@ -103,9 +103,13 @@ function MapAutoFit({ incidents }) {
   );
 
   useEffect(() => {
-    if (positions.length > 0) {
+    if (positions.length === 1) {
+      map.setView(positions[0], 12);
+    }
+
+    if (positions.length > 1) {
       map.fitBounds(positions, {
-        padding: [35, 35],
+        padding: [45, 45],
         maxZoom: 12,
       });
     }
@@ -114,91 +118,125 @@ function MapAutoFit({ incidents }) {
   return null;
 }
 
-export default function CrisisMap({ incidents, onSelectIncident }) {
+export default function CrisisMap({
+  incidents,
+  onSelectIncident,
+}) {
   return (
     <div className="crisis-map-wrapper">
 
       <MapContainer
-        center={HYDERABAD_CENTER}
-        zoom={11}
-        scrollWheelZoom={true}
-        className="crisis-map"
+  center={HYDERABAD_CENTER}
+  zoom={11}
+  scrollWheelZoom={true}
+  className="crisis-map"
+>
+
+  <TileLayer
+    attribution="&copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
+    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+  />
+
+  <MapAutoFit incidents={incidents} />
+
+  {incidents.map((incident, index) => {
+    const position = getCoordinates(
+      incident.location,
+      index
+    );
+
+    const priority = incident.priority || "P4";
+    const color = getPriorityColor(priority);
+
+    return (
+      <CircleMarker
+        key={incident.id}
+        center={position}
+        radius={priority === "P1" ? 14 : 11}
+        pathOptions={{
+          color: color,
+          fillColor: color,
+          fillOpacity: 0.9,
+          weight: 3,
+        }}
+        eventHandlers={{
+          click: () => onSelectIncident(incident),
+        }}
       >
 
-        <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+       <Popup>
+  <div className="map-popup">
 
-        <MapAutoFit incidents={incidents} />
+    <div className="popup-title">
+      <span>
+        {getIncidentIcon(incident.incident_type)}
+      </span>
 
-        {incidents.map((incident, index) => {
-          const position = getCoordinates(
-            incident.location,
-            index
-          );
+      <strong>
+        {incident.incident_type}
+      </strong>
+    </div>
 
-          const priority = incident.priority || "P4";
-          const color = getPriorityColor(priority);
+    <div className="popup-priority">
+      <span className={`popup-priority-badge ${priority.toLowerCase()}`}>
+        {priority}
+      </span>
 
-          return (
-            <CircleMarker
-              key={incident.id}
-              center={position}
-              radius={priority === "P1" ? 13 : 10}
-              pathOptions={{
-                color,
-                fillColor: color,
-                fillOpacity: 0.85,
-                weight: 3,
-              }}
-              eventHandlers={{
-                click: () => onSelectIncident(incident),
-              }}
-            >
+      <span>{incident.severity}</span>
+    </div>
 
-              <Popup>
-                <div className="map-popup">
+    <div className="popup-row">
+      📍 {incident.location}
+    </div>
 
-                  <strong>
-                    {getIncidentIcon(incident.incident_type)}
-                    {" "}
-                    {incident.incident_type}
-                  </strong>
+    <div className="popup-row">
+      Risk:{" "}
+      <strong>
+        {Number(incident.risk_score || 0).toFixed(0)}
+        /100
+      </strong>
+    </div>
 
-                  <div>
-                    <b>{priority}</b>
-                    {" · "}
-                    {incident.severity}
-                  </div>
+    {incident.people_affected && (
+      <div className="popup-flag">
+        👥 People affected
+      </div>
+    )}
 
-                  <div>
-                    Risk:{" "}
-                    {Number(incident.risk_score || 0).toFixed(0)}
-                    /100
-                  </div>
+    {incident.people_trapped && (
+      <div className="popup-flag">
+        🚨 People trapped
+      </div>
+    )}
 
-                  <div>
-                    📍 {incident.location}
-                  </div>
+    {incident.rescue_required && (
+      <div className="popup-flag">
+        🚑 Rescue required
+      </div>
+    )}
 
-                  <button
-                    onClick={() =>
-                      onSelectIncident(incident)
-                    }
-                  >
-                    View Incident
-                  </button>
+    {incident.road_blocked && (
+      <div className="popup-flag">
+        🚧 Road blocked
+      </div>
+    )}
 
-                </div>
-              </Popup>
+    <button
+      className="popup-button"
+      onClick={() => onSelectIncident(incident)}
+    >
+      View Incident Intelligence
+    </button>
 
-            </CircleMarker>
-          );
-        })}
+  </div>
+</Popup>
+      </CircleMarker>
+    );
+  })}
 
-      </MapContainer>
+</MapContainer>
 
+      {/* MAP OVERLAY */}
       <div className="map-overlay">
 
         <div className="map-title">
@@ -212,6 +250,7 @@ export default function CrisisMap({ incidents, onSelectIncident }) {
 
       </div>
 
+      {/* MAP LEGEND */}
       <div className="map-legend">
 
         <div>
